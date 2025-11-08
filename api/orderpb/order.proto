@@ -1,0 +1,41 @@
+syntax = "proto3";
+package orderpb;
+
+option go_package = "github.com/mutition/go_start/Internal/common/genproto/orderpb";
+
+import "google/protobuf/empty.proto";
+
+service OrderService {
+    rpc CreateOrder(CreateOrderRequest) returns (google.protobuf.Empty);
+    rpc GetOrder(GetOrderRequest) returns (Order);
+    rpc UpdateOrder(Order) returns (google.protobuf.Empty);
+}
+
+message CreateOrderRequest {
+    string CustomerId = 1;
+    repeated ItemWithQuantity Items = 2;
+}
+
+message GetOrderRequest {
+    string OrderId = 1;
+    string CustomerId = 2;
+}
+
+message ItemWithQuantity{
+    string Id = 1;
+    int32 Quantity = 2;
+}
+
+message Item{
+    string Id = 1;
+    string Name = 2;
+    int32 Quantity = 3;
+    string PriceId = 4;
+}
+
+message Order {
+    string Id = 1;
+    string CustomerId = 2;
+    string Status = 3;
+    repeated Item Items = 4;
+}
