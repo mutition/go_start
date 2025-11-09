@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mutition/go_start/common/config"
+	"github.com/mutition/go_start/common/genproto/orderpb"
 	"github.com/mutition/go_start/common/server"
 	"github.com/mutition/go_start/order/ports"
+	"github.com/mutition/go_start/order/service"
+	"google.golang.org/grpc"
 
 	// "github.com/mutition/go_start/order/ports"
 	"github.com/spf13/viper"
@@ -20,11 +24,20 @@ func init() {
 
 func main() {
 	serviceName := viper.GetString("order.service-name")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	application := service.NewApplication(ctx)
+
+	go server.RunGRPCServer(serviceName, func(server *grpc.Server) {
+		orderpb.RegisterOrderServiceServer(server, ports.NewGRPCServer(application))
+	})
+
 	server.RunHTTPServer(serviceName, func(router *gin.Engine) {
-		ports.RegisterHandlersWithOptions(router, HTTPServer{},ports.GinServerOptions{
-			BaseURL: "/api",
-			Middlewares: nil,
+		ports.RegisterHandlersWithOptions(router, HTTPServer{app: application}, ports.GinServerOptions{
+			BaseURL:      "/api",
+			Middlewares:  nil,
 			ErrorHandler: nil,
 		})
 	})
+
 }
