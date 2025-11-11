@@ -50,7 +50,7 @@ func (m *MemoryOrderRepository) Create(ctx context.Context, order *domain.Order)
 		"status":      res.Status,
 		"paymentLink": res.PaymentLink,
 		"items":       res.Items,
-	}).Debug("Order created")
+	}).Info("Order created")
 	return res, nil
 }
 

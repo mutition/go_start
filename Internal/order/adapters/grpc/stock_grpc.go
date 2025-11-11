@@ -17,11 +17,11 @@ func NewStockGRPC(client stockpb.StockServiceClient) *StockGRPC {
 }
 
 // CheckIfItemsInStock implements query.StockService.
-func (s *StockGRPC) CheckIfItemsInStock(ctx context.Context, items []*orderpb.ItemWithQuantity) ( error) {
-	_, err := s.client.CheckIfItemsInStock(ctx, &stockpb.CheckIfItemsInStockRequest{
+func (s *StockGRPC) CheckIfItemsInStock(ctx context.Context, items []*orderpb.ItemWithQuantity) (*stockpb.CheckIfItemsInStockResponse, error) {
+	response, err := s.client.CheckIfItemsInStock(ctx, &stockpb.CheckIfItemsInStockRequest{
 		Items: items,
 	})
-	return err
+	return response, err
 }
 
 // GetItems implements query.StockService.

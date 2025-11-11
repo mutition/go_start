@@ -21,11 +21,23 @@ func NewMemoryStockRepository() *MemoryStockRepository {
 }
 
 var stub = map[string]*orderpb.Item{
-	"item1": {
-		Id: "1",
-		Name: "Item 1",
-		PriceId: "price1",
+	"item-1": {
+		Id:       "item-1",
+		Name:     "Item-1",
+		PriceId:  "price1",
 		Quantity: 10,
+	},
+	"item-2": {
+		Id:       "item-2",
+		Name:     "Item-2",
+		PriceId:  "price2",
+		Quantity: 20,
+	},
+	"item-3": {
+		Id:       "item-3",
+		Name:     "Item-3",
+		PriceId:  "price3",
+		Quantity: 30,
 	},
 }
 
@@ -37,7 +49,7 @@ func (m *MemoryStockRepository) GetItems(ctx context.Context, itemIds []string) 
 	for _, itemId := range itemIds {
 		item, ok := m.store[itemId]
 		if ok {
-			res = append(res, item)	
+			res = append(res, item)
 		} else {
 			missingItemIds = append(missingItemIds, itemId)
 		}
