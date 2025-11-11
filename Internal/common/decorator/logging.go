@@ -21,7 +21,7 @@ func (d *LoggingQueryDecorator[Q, R]) Handle(ctx context.Context, cmd Q) (res R,
 	logger.Info("Query received")
 	defer func() {
 		if err != nil {
-			logger.Error("Query failed", "error", err)
+			logger.Error("Query failed ", "error", err)
 		} else {
 			logger.Info("Query completed")
 		}

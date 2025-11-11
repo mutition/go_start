@@ -17,11 +17,11 @@ type MemoryOrderRepository struct {
 
 var fakeData = []*domain.Order{
 	{
-		ID: "1",
-		CustomerID: "1",
-		Status: "pending",
+		ID:          "1",
+		CustomerID:  "1",
+		Status:      "pending",
 		PaymentLink: "https://payment.com",
-		Items: nil,
+		Items:       nil,
 	},
 }
 
@@ -32,14 +32,12 @@ func NewMemoryOrderRepository() *MemoryOrderRepository {
 	}
 }
 
-
-
-//implement Repository interface
+// implement Repository interface
 func (m *MemoryOrderRepository) Create(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	res := &domain.Order{
-		ID:          strconv.FormatInt(time.Now().UnixNano(), 10),
+		ID:          strconv.FormatInt(time.Now().Unix(), 10),
 		CustomerID:  order.CustomerID,
 		Status:      order.Status,
 		PaymentLink: order.PaymentLink,
@@ -47,11 +45,11 @@ func (m *MemoryOrderRepository) Create(ctx context.Context, order *domain.Order)
 	}
 	m.store = append(m.store, res)
 	logrus.WithFields(logrus.Fields{
-		"orderId": res.ID,
-		"customerId": res.CustomerID,
-		"status": res.Status,
+		"orderId":     res.ID,
+		"customerId":  res.CustomerID,
+		"status":      res.Status,
 		"paymentLink": res.PaymentLink,
-		"items": res.Items,
+		"items":       res.Items,
 	}).Debug("Order created")
 	return res, nil
 }
@@ -59,6 +57,9 @@ func (m *MemoryOrderRepository) Create(ctx context.Context, order *domain.Order)
 func (m *MemoryOrderRepository) Get(ctx context.Context, orderId string, customerId string) (*domain.Order, error) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
+	for i, v := range m.store {
+		logrus.Info("m.store[", i, "] = ", v)
+	}
 	for _, o := range m.store {
 		if o.ID == orderId && o.CustomerID == customerId {
 			logrus.Info("Order found ", "orderId ", orderId, "customerId ", customerId)
@@ -71,7 +72,7 @@ func (m *MemoryOrderRepository) Get(ctx context.Context, orderId string, custome
 func (m *MemoryOrderRepository) Update(ctx context.Context, order *domain.Order, updateFn func(ctx context.Context, order *domain.Order) (*domain.Order, error)) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	for i , o := range m.store {
+	for i, o := range m.store {
 		if o.ID == order.ID && o.CustomerID == order.CustomerID {
 			updatedorder, err := updateFn(ctx, o)
 			if err != nil {

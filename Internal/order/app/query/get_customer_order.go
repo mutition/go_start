@@ -8,12 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type GetCustomerOrderQuery struct {
+type GetCustomerOrder struct {
 	CustomerId string
 	OrderId    string
 }
 
-type GetCustomerOrderQueryHandler decorator.QueryHandler[GetCustomerOrderQuery, *domain.Order]
+type GetCustomerOrderHandler decorator.QueryHandler[GetCustomerOrder, *domain.Order]
 
 type getCustomerOrderQueryHandler struct {
 	orderRepo domain.Repository
@@ -21,18 +21,18 @@ type getCustomerOrderQueryHandler struct {
 
 
 func NewGetCustomerOrderQueryHandler(orderRepo domain.Repository,
-	logger *logrus.Entry, client decorator.MetricsClient) GetCustomerOrderQueryHandler {
+	logger *logrus.Entry, client decorator.MetricsClient) GetCustomerOrderHandler {
 	if orderRepo == nil {
 		panic("orderRepo is nil")
 	}
-	return decorator.ApplyQueryDecorators[GetCustomerOrderQuery, *domain.Order](
+	return decorator.ApplyQueryDecorators[GetCustomerOrder, *domain.Order](
 		&getCustomerOrderQueryHandler{orderRepo: orderRepo},
 		logger,
 		client,
 	)
 }
 
-func (h *getCustomerOrderQueryHandler) Handle(ctx context.Context, query GetCustomerOrderQuery) (*domain.Order, error) {
+func (h *getCustomerOrderQueryHandler) Handle(ctx context.Context, query GetCustomerOrder) (*domain.Order, error) {
 	o, err := h.orderRepo.Get(ctx, query.OrderId, query.CustomerId)
 	if err != nil {
 		return nil, err

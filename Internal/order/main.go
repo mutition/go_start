@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mutition/go_start/common/config"
@@ -10,6 +11,7 @@ import (
 	"github.com/mutition/go_start/common/server"
 	"github.com/mutition/go_start/order/ports"
 	"github.com/mutition/go_start/order/service"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	// "github.com/mutition/go_start/order/ports"
@@ -20,13 +22,21 @@ func init() {
 	if err := config.NewViperConfig(); err != nil {
 		log.Fatal(err.Error())
 	}
+	logrus.SetFormatter(&logrus.TextFormatter{
+        DisableTimestamp: true,      // ❌ 不显示时间
+        ForceColors:      true,      // ✅ 彩色输出
+        FullTimestamp:    false,     // 简短格式
+        PadLevelText:     true,      // 对齐 level
+        TimestampFormat:  time.StampMilli,
+    })
 }
 
 func main() {
 	serviceName := viper.GetString("order.service-name")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	application := service.NewApplication(ctx)
+	application, cleanup := service.NewApplication(ctx)
+	defer cleanup()
 
 	go server.RunGRPCServer(serviceName, func(server *grpc.Server) {
 		orderpb.RegisterOrderServiceServer(server, ports.NewGRPCServer(application))

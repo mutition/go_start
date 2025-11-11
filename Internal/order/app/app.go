@@ -1,15 +1,20 @@
 package app
 
-import "github.com/mutition/go_start/order/app/query"
+import (
+	"github.com/mutition/go_start/order/app/command"
+	"github.com/mutition/go_start/order/app/query"
+)
 
 type Application struct {
-	Commands Commads
+	Commands Commands
 	Queries  Queries
 }
 
-type Commads struct {
+type Commands struct {
+	CreateOrder command.CreateOrderHandler
+	UpdateOrder command.UpdateOrderHandler
 }
 
 type Queries struct {
-	GetCustomerOrder query.GetCustomerOrderQueryHandler
+	GetCustomerOrder query.GetCustomerOrderHandler
 }
