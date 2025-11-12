@@ -21,5 +21,5 @@ consul:
   addr: http://110.42.248.168:8500
 
 
-stripe-key: sk_test_51SSZ8RE7odSGW0FazZStBpsSYsK6vVrsLKkhGDl2vPrKGvd0hK8Jf7Nqqaic6rYLOkt9fA5N1RfA6GX5FaV8SK9X00uB7DGG6b
+stripe-key: "$STRIPE_KEY"
 local: true

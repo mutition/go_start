@@ -18,6 +18,8 @@ func init() {
 }
 
 func main() {
+	//test stripe key
+	logrus.Info(viper.GetString("stripe-key"))
 	serverType := viper.GetString("payment.server-to-run")
 	serviceName := viper.GetString("payment.service-name")
 	paymentHandler := NewPaymentHandler()
