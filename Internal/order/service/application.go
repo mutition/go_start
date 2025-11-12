@@ -28,8 +28,7 @@ func NewApplication(ctx context.Context) (app.Application, func() error) {
 
 func newApplication(_ context.Context, stockGRPC query.StockService) app.Application {
 	orderRepo := adapters.NewMemoryOrderRepository()
-	logrusLogger := logrus.New()
-	logger := logrus.NewEntry(logrusLogger)
+	logger := logrus.NewEntry(logrus.StandardLogger())
 	metricclient := metric.NewTodoMetrics()
 	return app.Application{
 		Queries: app.Queries{

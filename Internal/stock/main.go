@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"github.com/mutition/go_start/common/discovery"
+	"github.com/mutition/go_start/common/logging"
 )
 
 func init() {
@@ -22,6 +23,7 @@ func init() {
 }
 
 func main() {
+	logging.Init()
 	serviceName := viper.GetString("stock.service-name")
 	serverType := viper.GetString("stock.server-to-run")
 

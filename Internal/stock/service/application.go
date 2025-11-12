@@ -12,7 +12,7 @@ import (
 
 func NewApplication(ctx context.Context) app.Application {
 	stockRepo := adapters.NewMemoryStockRepository()
-	logger := logrus.NewEntry(logrus.New())
+	logger := logrus.NewEntry(logrus.StandardLogger())
 	client := metric.NewTodoMetrics()
 	return app.Application{
 		Queries: app.Queries{
