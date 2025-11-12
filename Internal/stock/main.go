@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"github.com/mutition/go_start/common/discovery"
 )
 
 func init() {
@@ -28,6 +29,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	application := service.NewApplication(ctx)
+
+	deregisterfunc, err := discovery.RegisterToConsul(ctx, serviceName)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer func() {
+		if err := deregisterfunc(); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 
 	switch serverType {
 	case "grpc":

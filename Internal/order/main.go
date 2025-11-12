@@ -13,6 +13,7 @@ import (
 	"github.com/mutition/go_start/order/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"github.com/mutition/go_start/common/discovery"
 
 	// "github.com/mutition/go_start/order/ports"
 	"github.com/spf13/viper"
@@ -35,6 +36,15 @@ func main() {
 	serviceName := viper.GetString("order.service-name")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	deregisterfunc, err := discovery.RegisterToConsul(ctx, serviceName)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer func() {
+		if err := deregisterfunc(); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 	application, cleanup := service.NewApplication(ctx)
 	defer cleanup()
 
