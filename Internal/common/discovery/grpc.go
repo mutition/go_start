@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func RegisterToConsul(ctx context.Context, serviceName string) (func() error, error) {
+func  RegisterToConsul(ctx context.Context, serviceName string) (func() error, error) {
 	registry, err := consul.NewConsulRegistry(viper.GetString("consul.addr"))
 	if err != nil {
 		return nil, err

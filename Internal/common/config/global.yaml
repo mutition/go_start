@@ -10,5 +10,16 @@ stock:
   server-to-run: grpc
   http-addr: 127.0.0.1:8283
   grpc-addr: 127.0.0.1:5003
+
+payment:
+  service-name: payment
+  server-to-run: http
+  http-addr: 127.0.0.1:8284
+  grpc-addr: 127.0.0.1:5004
+
 consul:
   addr: http://110.42.248.168:8500
+
+
+stripe-key: sk_test_51SSZ8RE7odSGW0FazZStBpsSYsK6vVrsLKkhGDl2vPrKGvd0hK8Jf7Nqqaic6rYLOkt9fA5N1RfA6GX5FaV8SK9X00uB7DGG6b
+local: true
