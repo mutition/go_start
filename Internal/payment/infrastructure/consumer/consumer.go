@@ -24,7 +24,7 @@ func (c *Consumer) Listen(ch *amqp.Channel) error {
 		logrus.Warnf("failed to consume message from queue %s: %v", q.Name, err)
 	}
 
-	var forever chan struct{}
+	forever := make(chan struct{})
 	go func() {
 		for msg := range msgs {
 			c.handleMessage(msg, q, ch)
