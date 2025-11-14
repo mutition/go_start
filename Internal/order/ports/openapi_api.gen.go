@@ -22,7 +22,7 @@ type ServerInterface interface {
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
-type ServerInterfaceWrapper struct{
+type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
 	HandlerMiddlewares []MiddlewareFunc
 	ErrorHandler       func(*gin.Context, error, int)

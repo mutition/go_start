@@ -2,15 +2,24 @@ package client
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/mutition/go_start/common/discovery"
 	"github.com/mutition/go_start/common/genproto/stockpb"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewGRPCClient(ctx context.Context) (client stockpb.StockServiceClient, close func() error, err error) {
-	grpcAddr := viper.GetString("stock.grpc-addr")
+func NewStockGRPCClient(ctx context.Context) (client stockpb.StockServiceClient, close func() error, err error) {
+	//服务发现
+	grpcAddr, err := discovery.GetServiceGRPCAddr(ctx, viper.GetString("stock.service-name"))
+	if err != nil {
+		return nil, nil, err
+	}
+	if grpcAddr == "" {
+		return nil, nil, fmt.Errorf("no grpc address found for service %s", viper.GetString("stock.service-name"))
+	}
 	dialOptions, err := grpcDialOptions(grpcAddr)
 	if err != nil {
 		return nil, nil, err

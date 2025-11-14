@@ -7,13 +7,12 @@
 package orderpb
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -252,7 +251,8 @@ type Order struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	CustomerId    string                 `protobuf:"bytes,2,opt,name=CustomerId,proto3" json:"CustomerId,omitempty"`
 	Status        string                 `protobuf:"bytes,3,opt,name=Status,proto3" json:"Status,omitempty"`
-	Items         []*Item                `protobuf:"bytes,4,rep,name=Items,proto3" json:"Items,omitempty"`
+	PaymentLink   string                 `protobuf:"bytes,4,opt,name=PaymentLink,proto3" json:"PaymentLink,omitempty"`
+	Items         []*Item                `protobuf:"bytes,5,rep,name=Items,proto3" json:"Items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -308,6 +308,13 @@ func (x *Order) GetStatus() string {
 	return ""
 }
 
+func (x *Order) GetPaymentLink() string {
+	if x != nil {
+		return x.PaymentLink
+	}
+	return ""
+}
+
 func (x *Order) GetItems() []*Item {
 	if x != nil {
 		return x.Items
@@ -337,14 +344,15 @@ const file_orderpb_order_proto_rawDesc = "" +
 	"\x02Id\x18\x01 \x01(\tR\x02Id\x12\x12\n" +
 	"\x04Name\x18\x02 \x01(\tR\x04Name\x12\x1a\n" +
 	"\bQuantity\x18\x03 \x01(\x05R\bQuantity\x12\x18\n" +
-	"\aPriceId\x18\x04 \x01(\tR\aPriceId\"t\n" +
+	"\aPriceId\x18\x04 \x01(\tR\aPriceId\"\x96\x01\n" +
 	"\x05Order\x12\x0e\n" +
 	"\x02Id\x18\x01 \x01(\tR\x02Id\x12\x1e\n" +
 	"\n" +
 	"CustomerId\x18\x02 \x01(\tR\n" +
 	"CustomerId\x12\x16\n" +
-	"\x06Status\x18\x03 \x01(\tR\x06Status\x12#\n" +
-	"\x05Items\x18\x04 \x03(\v2\r.orderpb.ItemR\x05Items2\xbf\x01\n" +
+	"\x06Status\x18\x03 \x01(\tR\x06Status\x12 \n" +
+	"\vPaymentLink\x18\x04 \x01(\tR\vPaymentLink\x12#\n" +
+	"\x05Items\x18\x05 \x03(\v2\r.orderpb.ItemR\x05Items2\xbf\x01\n" +
 	"\fOrderService\x12B\n" +
 	"\vCreateOrder\x12\x1b.orderpb.CreateOrderRequest\x1a\x16.google.protobuf.Empty\x124\n" +
 	"\bGetOrder\x12\x18.orderpb.GetOrderRequest\x1a\x0e.orderpb.Order\x125\n" +

@@ -14,7 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"github.com/mutition/go_start/common/discovery"
 	"github.com/mutition/go_start/common/logging"
-
 	// "github.com/mutition/go_start/order/ports"
 	"github.com/spf13/viper"
 )
