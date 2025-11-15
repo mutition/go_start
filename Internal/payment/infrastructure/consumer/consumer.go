@@ -45,12 +45,11 @@ func (c *Consumer) handleMessage(msg amqp.Delivery, q amqp.Queue, ch *amqp.Chann
 	logrus.Infof("received message from queue %s: %s", msg.RoutingKey, msg.Body)
 	order := &orderpb.Order{}
 	if err := json.Unmarshal(msg.Body, order); err != nil {
-		logrus.Infof("failed to unmarshal message: %v, message: %s", err, msg.Body)
 		_ = msg.Nack(false, false)
 		return
 	}
 
-	if _ , err := c.application.Commands.CreatePayment.Handle(context.TODO(), command.CreatePayment{
+	if _, err := c.application.Commands.CreatePayment.Handle(context.TODO(), command.CreatePayment{
 		Order: order,
 	}); err != nil {
 		logrus.Infof("failed to create payment: %v", err)

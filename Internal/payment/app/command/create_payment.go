@@ -43,7 +43,6 @@ func (h *createPaymentHandler) Handle(ctx context.Context, cmd CreatePayment) (s
 		Items:       cmd.Order.Items,
 		PaymentLink: link,
 	}
-	logrus.Infof("payment for order %s created || create_payment || link: %s", cmd.Order.Id, newOrder.PaymentLink)
 	err = h.orderGRPC.UpdateOrder(ctx, newOrder)
 	return link, err
 }

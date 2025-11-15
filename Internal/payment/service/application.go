@@ -9,7 +9,9 @@ import (
 	"github.com/mutition/go_start/payment/app"
 	"github.com/mutition/go_start/payment/app/command"
 	"github.com/mutition/go_start/payment/infrastructure/processor"
+	"github.com/mutition/go_start/payment/domain"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func NewApplication(ctx context.Context) (app.Application, func() error) {
@@ -18,14 +20,14 @@ func NewApplication(ctx context.Context) (app.Application, func() error) {
 		panic(err)
 	}
 	orderGRPC := adapters.NewOrderGRPC(orderClient)
-	memoryProcessor := processor.NewInmenProcessor()
-	return newApplication(ctx, orderGRPC, memoryProcessor), func() error {
+	stripeProcessor := processor.NewStripeProcessor(viper.GetString("stripe-key"))
+	return newApplication(ctx, orderGRPC, stripeProcessor), func() error {
 		return closeOrderClient()
 	}
 }
 
 func newApplication(ctx context.Context, orderGRPC command.OrderService,
-	processor *processor.InmenProcessor) app.Application {
+	processor domain.Processor) app.Application {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 	metricclient := metric.NewTodoMetrics()
 	return app.Application{
