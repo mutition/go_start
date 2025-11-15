@@ -72,9 +72,10 @@ func (m *MemoryOrderRepository) Get(ctx context.Context, orderId string, custome
 func (m *MemoryOrderRepository) Update(ctx context.Context, order *domain.Order, updateFn func(ctx context.Context, order *domain.Order) (*domain.Order, error)) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+	logrus.Infof("order_inmem_repo || update || order: %v", order)
 	for i, o := range m.store {
 		if o.ID == order.ID && o.CustomerID == order.CustomerID {
-			updatedorder, err := updateFn(ctx, o)
+			updatedorder, err := updateFn(ctx, order)
 			if err != nil {
 				return err
 			}

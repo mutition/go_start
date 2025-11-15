@@ -32,6 +32,7 @@ func NewOrder(id, customerID, status, paymentLink string, items []*orderpb.Item)
 		CustomerID: customerID,
 		Status:     status,
 		Items:      items,
+		PaymentLink: paymentLink,
 	}, nil
 }
 

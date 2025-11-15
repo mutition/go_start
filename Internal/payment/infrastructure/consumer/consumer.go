@@ -1,16 +1,23 @@
 package consumer
 
 import (
+	"context"
+	"encoding/json"
+
 	"github.com/mutition/go_start/common/broker"
+	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/payment/app"
+	"github.com/mutition/go_start/payment/app/command"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 )
 
 type Consumer struct {
+	application app.Application
 }
 
-func NewConsumer() *Consumer {
-	return &Consumer{}
+func NewConsumer(application app.Application) *Consumer {
+	return &Consumer{application: application}
 }
 
 func (c *Consumer) Listen(ch *amqp.Channel) error {
@@ -36,5 +43,20 @@ func (c *Consumer) Listen(ch *amqp.Channel) error {
 
 func (c *Consumer) handleMessage(msg amqp.Delivery, q amqp.Queue, ch *amqp.Channel) {
 	logrus.Infof("received message from queue %s: %s", msg.RoutingKey, msg.Body)
+	order := &orderpb.Order{}
+	if err := json.Unmarshal(msg.Body, order); err != nil {
+		logrus.Infof("failed to unmarshal message: %v, message: %s", err, msg.Body)
+		_ = msg.Nack(false, false)
+		return
+	}
+
+	if _ , err := c.application.Commands.CreatePayment.Handle(context.TODO(), command.CreatePayment{
+		Order: order,
+	}); err != nil {
+		logrus.Infof("failed to create payment: %v", err)
+		_ = msg.Nack(false, false)
+		return
+	}
 	_ = msg.Ack(false)
+	logrus.Infof("consumer for order %s success", order.Id)
 }
