@@ -57,7 +57,15 @@ function log_info {
 }
 
 function modules() {
-  modules=$(ls internal)
+  # ✅ 修复路径大小写问题（Windows 上目录是 Internal）
+  if [ -d "Internal" ]; then
+    modules=$(ls Internal)
+  elif [ -d "internal" ]; then
+    modules=$(ls internal)
+  else
+    log_error "Neither Internal nor internal directory found"
+    exit 1
+  fi
   echo "${modules[@]}"
 }
 

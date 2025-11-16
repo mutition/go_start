@@ -12,11 +12,10 @@ type CommandHandler[C any, R any] interface {
 
 func ApplyCommandDecorators[C any, R any](handler CommandHandler[C, R], logger *logrus.Entry, client MetricsClient) CommandHandler[C, R] {
 	return &LoggingQueryDecorator[C, R]{
-		logger: logger, 
-		base: 
-			&MetricsQueryDecorator[C, R]{
-				base: handler, 
-				client: client,
-			},
+		logger: logger,
+		base: &MetricsQueryDecorator[C, R]{
+			base:   handler,
+			client: client,
+		},
 	}
 }

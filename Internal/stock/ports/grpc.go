@@ -32,5 +32,5 @@ func (g GRPCServer) CheckIfItemsInStock(ctx context.Context, request *stockpb.Ch
 	if err != nil {
 		return nil, err
 	}
-	return &stockpb.CheckIfItemsInStockResponse{Items: items,InStock: 1}, nil
+	return &stockpb.CheckIfItemsInStockResponse{Items: items, InStock: 1}, nil
 }

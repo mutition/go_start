@@ -29,11 +29,11 @@ type CreateOrderHandler decorator.CommandHandler[CreateOrder, *CreateOrderResult
 type createOrderHandler struct {
 	orderRepo domain.Repository
 	stockGRPC query.StockService
-	ch *amqp.Channel
+	ch        *amqp.Channel
 }
 
-func NewCreateOrderHandler(orderRepo domain.Repository,ch *amqp.Channel, 
-	stockGRPC query.StockService,logger *logrus.Entry, 
+func NewCreateOrderHandler(orderRepo domain.Repository, ch *amqp.Channel,
+	stockGRPC query.StockService, logger *logrus.Entry,
 	client decorator.MetricsClient) CreateOrderHandler {
 	if orderRepo == nil {
 		panic("orderRepo is nil")
@@ -61,33 +61,29 @@ func (h *createOrderHandler) Handle(ctx context.Context, cmd CreateOrder) (*Crea
 		return nil, err
 	}
 
-	q, err := h.ch.QueueDeclare(broker.EventOrderCreated, true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
-
 
 	body, err := json.Marshal(o)
 	if err != nil {
 		return nil, err
 	}
-	err = h.ch.PublishWithContext(ctx, "", q.Name, false, false, amqp.Publishing{
-		ContentType: "application/json",
+	err = h.ch.PublishWithContext(ctx, broker.EventOrderCreated, broker.EventOrderCreated, false, false, amqp.Publishing{
+		ContentType:  "application/json",
 		DeliveryMode: amqp.Persistent,
-		Body:        body,
+		Body:         body,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	
 
 	return &CreateOrderResult{
 		OrderId: o.ID,
 	}, nil
 }
 
-func (h *createOrderHandler) validateItems(ctx context.Context, 
+func (h *createOrderHandler) validateItems(ctx context.Context,
 	items []*orderpb.ItemWithQuantity) ([]*orderpb.Item, error) {
 	if len(items) == 0 {
 		return nil, errors.New("items are required")

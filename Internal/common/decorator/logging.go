@@ -15,7 +15,7 @@ type LoggingQueryDecorator[Q any, R any] struct {
 
 func (d *LoggingQueryDecorator[Q, R]) Handle(ctx context.Context, cmd Q) (res R, err error) {
 	logger := d.logger.WithFields(logrus.Fields{
-		"query": generateQueryName(cmd),
+		"query":      generateQueryName(cmd),
 		"query_body": fmt.Sprintf("%#v", cmd),
 	})
 	logger.Info("Query received")

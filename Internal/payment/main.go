@@ -29,7 +29,7 @@ func main() {
 	logrus.Info(viper.GetString("stripe-key"))
 	serverType := viper.GetString("payment.server-to-run")
 	serviceName := viper.GetString("payment.service-name")
-	paymentHandler := NewPaymentHandler()
+
 	application, cleanup := service.NewApplication(ctx)
 	defer cleanup()
 	ch, closeCh := broker.ConnectToRabbitMQ(
@@ -40,7 +40,7 @@ func main() {
 		_ = closeCh()
 		_ = ch.Close()
 	}()
-
+	paymentHandler := NewPaymentHandler(ch)
 	go consumer.NewConsumer(application).Listen(ch)
 
 	switch serverType {

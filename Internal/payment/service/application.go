@@ -8,8 +8,8 @@ import (
 	"github.com/mutition/go_start/payment/adapters"
 	"github.com/mutition/go_start/payment/app"
 	"github.com/mutition/go_start/payment/app/command"
-	"github.com/mutition/go_start/payment/infrastructure/processor"
 	"github.com/mutition/go_start/payment/domain"
+	"github.com/mutition/go_start/payment/infrastructure/processor"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -26,7 +26,7 @@ func NewApplication(ctx context.Context) (app.Application, func() error) {
 	}
 }
 
-func newApplication(ctx context.Context, orderGRPC command.OrderService,
+func newApplication(_ context.Context, orderGRPC command.OrderService,
 	processor domain.Processor) app.Application {
 	logger := logrus.NewEntry(logrus.StandardLogger())
 	metricclient := metric.NewTodoMetrics()

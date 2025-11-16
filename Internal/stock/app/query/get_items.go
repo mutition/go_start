@@ -2,10 +2,11 @@ package query
 
 import (
 	"context"
+
+	"github.com/mutition/go_start/common/decorator"
 	"github.com/mutition/go_start/common/genproto/orderpb"
 	domain "github.com/mutition/go_start/stock/domain/stock"
 	"github.com/sirupsen/logrus"
-	"github.com/mutition/go_start/common/decorator"
 )
 
 type GetItems struct {
@@ -19,7 +20,7 @@ type getItemsHandler struct {
 }
 
 func NewGetItemsHandler(stockRepo domain.Repository,
-	 logger *logrus.Entry, client decorator.MetricsClient) GetItemsHandler {
+	logger *logrus.Entry, client decorator.MetricsClient) GetItemsHandler {
 	if stockRepo == nil {
 		panic("stockRepo is nil")
 	}
@@ -37,4 +38,3 @@ func (h *getItemsHandler) Handle(ctx context.Context, query GetItems) ([]*orderp
 	}
 	return items, nil
 }
-

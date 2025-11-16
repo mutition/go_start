@@ -20,7 +20,7 @@ type checkIfItemsInStockHandler struct {
 }
 
 func NewCheckIfItemsInStockHandler(stockRepo domain.Repository,
-	 logger *logrus.Entry, client decorator.MetricsClient) CheckIfItemsInStockHandler {
+	logger *logrus.Entry, client decorator.MetricsClient) CheckIfItemsInStockHandler {
 	if stockRepo == nil {
 		panic("stockRepo is nil")
 	}
@@ -31,15 +31,23 @@ func NewCheckIfItemsInStockHandler(stockRepo domain.Repository,
 	)
 }
 
+var stub = map[string]string{
+	"item-1": "price_1STfjXE7odSGW0Fa9FMkrjrq",
+	"item-2": "price_1STduFE7odSGW0FaXxVaF9c3",
+}
+
 func (h *checkIfItemsInStockHandler) Handle(ctx context.Context, query CheckIfItemsInStock) ([]*orderpb.Item, error) {
 	var res []*orderpb.Item
 	for _, item := range query.Items {
+		priceId, ok := stub[item.Id]
+		if !ok {
+			priceId = stub["item-1"]
+		}
 		res = append(res, &orderpb.Item{
 			Id:       item.Id,
 			Quantity: item.Quantity,
+			PriceId:  priceId,
 		})
 	}
 	return res, nil
 }
-
-

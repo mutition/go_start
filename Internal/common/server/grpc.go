@@ -40,7 +40,7 @@ func RunGRPCServerOnaddr(addr any, registerServer func(server *grpc.Server)) {
 	registerServer(grpcServer)
 	listen, err := net.Listen("tcp", addr.(string))
 	if err != nil {
-		logrus.Warn("failed to listen: %v", err)
+		logrus.Warnf("failed to listen: %v", err)
 	}
 	logrus.Infof("grpc server is running on %s", listen.Addr().String())
 	if err := grpcServer.Serve(listen); err != nil {

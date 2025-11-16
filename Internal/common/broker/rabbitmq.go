@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ConnectToRabbitMQ(user, password, host, port string)(*amqp.Channel,func() error) {
+func ConnectToRabbitMQ(user, password, host, port string) (*amqp.Channel, func() error) {
 	address := fmt.Sprintf("amqp://%s:%s@%s:%s/", user, password, host, port)
 	conn, err := amqp.Dial(address)
 	if err != nil {

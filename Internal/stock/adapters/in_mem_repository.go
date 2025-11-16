@@ -24,19 +24,19 @@ var stub = map[string]*orderpb.Item{
 	"item-1": {
 		Id:       "item-1",
 		Name:     "Item-1",
-		PriceId:  "price1",
+		PriceId:  "price_1STduFE7odSGW0FaXxVaF9c3",
 		Quantity: 10,
 	},
 	"item-2": {
 		Id:       "item-2",
 		Name:     "Item-2",
-		PriceId:  "price2",
+		PriceId:  "price_1STfjXE7odSGW0Fa9FMkrjrq",
 		Quantity: 20,
 	},
 	"item-3": {
 		Id:       "item-3",
 		Name:     "Item-3",
-		PriceId:  "price3",
+		PriceId:  "price_1STduFE7odSGW0FaXxVaF9c3",
 		Quantity: 30,
 	},
 }

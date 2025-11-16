@@ -3,10 +3,11 @@ package processor
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/mutition/go_start/common/genproto/orderpb"
-	"github.com/stripe/stripe-go/v80"
-	"github.com/stripe/stripe-go/v80/checkout/session"
+	"github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/checkout/session"
 )
 
 type StripeProcessor struct {
@@ -26,7 +27,7 @@ func (p *StripeProcessor) CreatePaymentLink(ctx context.Context, order *orderpb.
 	for _, item := range order.Items {
 		items = append(items, &stripe.CheckoutSessionLineItemParams{
 			//先写死
-			Price:    stripe.String("price_1STduFE7odSGW0FaXxVaF9c3"),
+			Price:    stripe.String(item.PriceId),
 			Quantity: stripe.Int64(int64(item.Quantity)),
 		})
 	}
@@ -44,7 +45,7 @@ func (p *StripeProcessor) CreatePaymentLink(ctx context.Context, order *orderpb.
 		Metadata:   metadata,
 		LineItems:  items,
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(successURL),
+		SuccessURL: stripe.String(fmt.Sprintf("%s?customerID=%s&orderID=%s", successURL, order.CustomerId, order.Id)),
 	}
 	result, err := session.New(params)
 	if err != nil {

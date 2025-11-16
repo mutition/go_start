@@ -5,15 +5,15 @@ import (
 	"log"
 
 	"github.com/mutition/go_start/common/config"
+	"github.com/mutition/go_start/common/discovery"
 	"github.com/mutition/go_start/common/genproto/stockpb"
+	"github.com/mutition/go_start/common/logging"
 	"github.com/mutition/go_start/common/server"
 	"github.com/mutition/go_start/stock/ports"
 	"github.com/mutition/go_start/stock/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
-	"github.com/mutition/go_start/common/discovery"
-	"github.com/mutition/go_start/common/logging"
 )
 
 func init() {
@@ -26,7 +26,6 @@ func main() {
 	logging.Init()
 	serviceName := viper.GetString("stock.service-name")
 	serverType := viper.GetString("stock.server-to-run")
-
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -48,7 +47,7 @@ func main() {
 			stockpb.RegisterStockServiceServer(server, ports.NewGRPCServer(application))
 		})
 	case "http":
-		
+
 	default:
 		logrus.Panicf("invalid server type: %s", serverType)
 	}

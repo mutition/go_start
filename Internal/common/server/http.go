@@ -10,7 +10,10 @@ func RunHTTPServer(serviceName string, wrapper func(router *gin.Engine)) {
 	RunHTTPServerOnaddr(addr, wrapper)
 	router := gin.Default()
 	wrapper(router)
-	router.Run(addr.(string))
+	err := router.Run(addr.(string))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func RunHTTPServerOnaddr(addr any, wrapper func(router *gin.Engine)) {

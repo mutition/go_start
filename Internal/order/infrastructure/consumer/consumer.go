@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/mutition/go_start/common/broker"
-	"github.com/mutition/go_start/payment/app"
-	"github.com/mutition/go_start/payment/app/command"
-	domain "github.com/mutition/go_start/payment/domain"
+	"github.com/mutition/go_start/order/app"
+	"github.com/mutition/go_start/order/app/command"
+	domain "github.com/mutition/go_start/order/domain/order"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
 )
@@ -21,11 +21,11 @@ func NewConsumer(application app.Application) *Consumer {
 }
 
 func (c *Consumer) Listen(ch *amqp.Channel) error {
-	q, err := ch.QueueDeclare(broker.EventOrderCreated, true, false, false, false, nil)
+	q, err := ch.QueueDeclare(broker.EventOrderPaid, true, false, false, false, nil)
 	if err != nil {
 		logrus.Fatalf("failed to declare queue: %v", err)
 	}
-	err = ch.QueueBind(q.Name, broker.EventOrderCreated, broker.EventOrderCreated, false, nil)
+	err = ch.QueueBind(q.Name, broker.EventOrderPaid, broker.EventOrderPaid, false, nil)
 	if err != nil {
 		logrus.Fatalf("failed to bind queue: %v", err)
 	}
@@ -53,11 +53,16 @@ func (c *Consumer) handleMessage(msg amqp.Delivery) {
 		return
 	}
 
-	if _, err := c.application.Commands.CreatePayment.Handle(context.TODO(), command.CreatePayment{
-		Order: order.ToProto(),
+	if _, err := c.application.Commands.UpdateOrder.Handle(context.TODO(), command.UpdateOrder{
+		Order: order,
+		UpdateFn: func(ctx context.Context, order *domain.Order) (*domain.Order, error) {
+			if err := order.IsPaid(); err != nil {
+				return nil, err
+			}
+			return order, nil
+		},
 	}); err != nil {
-		logrus.Infof("failed to create payment: %v", err)
-		_ = msg.Nack(false, false)
+		logrus.Infof("order %s failed to update payment: %v", order.ID, err)
 		return
 	}
 	_ = msg.Ack(false)

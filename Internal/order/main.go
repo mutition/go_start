@@ -5,15 +5,18 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mutition/go_start/common/broker"
 	"github.com/mutition/go_start/common/config"
+	"github.com/mutition/go_start/common/discovery"
 	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/common/logging"
 	"github.com/mutition/go_start/common/server"
+	"github.com/mutition/go_start/order/infrastructure/consumer"
 	"github.com/mutition/go_start/order/ports"
 	"github.com/mutition/go_start/order/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"github.com/mutition/go_start/common/discovery"
-	"github.com/mutition/go_start/common/logging"
+
 	// "github.com/mutition/go_start/order/ports"
 	"github.com/spf13/viper"
 )
@@ -23,12 +26,12 @@ func init() {
 		log.Fatal(err.Error())
 	}
 	// logrus.SetFormatter(&logrus.TextFormatter{
-    //     DisableTimestamp: true,      // ❌ 不显示时间
-    //     ForceColors:      true,      // ✅ 彩色输出
-    //     FullTimestamp:    false,     // 简短格式
-    //     PadLevelText:     true,      // 对齐 level
-    //     TimestampFormat:  time.StampMilli,
-    // })
+	//     DisableTimestamp: true,      // ❌ 不显示时间
+	//     ForceColors:      true,      // ✅ 彩色输出
+	//     FullTimestamp:    false,     // 简短格式
+	//     PadLevelText:     true,      // 对齐 level
+	//     TimestampFormat:  time.StampMilli,
+	// })
 }
 
 func main() {
@@ -36,6 +39,14 @@ func main() {
 	serviceName := viper.GetString("order.service-name")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	ch, closeCh := broker.ConnectToRabbitMQ(
+		viper.GetString("rabbitmq.user"), viper.GetString("rabbitmq.password"),
+		viper.GetString("rabbitmq.host"), viper.GetString("rabbitmq.port"))
+
+	defer func() {
+		_ = closeCh()
+		_ = ch.Close()
+	}()
 	deregisterfunc, err := discovery.RegisterToConsul(ctx, serviceName)
 	if err != nil {
 		logrus.Fatal(err)
@@ -46,13 +57,20 @@ func main() {
 		}
 	}()
 	application, cleanup := service.NewApplication(ctx)
-	defer cleanup()
+	defer func() {
+		_ = cleanup()
+	}()
+
+	go func() {
+		_ = consumer.NewConsumer(application).Listen(ch)
+	}()
 
 	go server.RunGRPCServer(serviceName, func(server *grpc.Server) {
 		orderpb.RegisterOrderServiceServer(server, ports.NewGRPCServer(application))
 	})
 
 	server.RunHTTPServer(serviceName, func(router *gin.Engine) {
+		router.StaticFile("/payment/success", "../../public/success.html")
 		ports.RegisterHandlersWithOptions(router, HTTPServer{app: application}, ports.GinServerOptions{
 			BaseURL:      "/api",
 			Middlewares:  nil,

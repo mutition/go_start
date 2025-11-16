@@ -28,20 +28,27 @@ func NewOrder(id, customerID, status, paymentLink string, items []*orderpb.Item)
 		return nil, errors.New("items are required")
 	}
 	return &Order{
-		ID:         id,
-		CustomerID: customerID,
-		Status:     status,
-		Items:      items,
+		ID:          id,
+		CustomerID:  customerID,
+		Status:      status,
+		Items:       items,
 		PaymentLink: paymentLink,
 	}, nil
 }
 
 func (o *Order) ToProto() *orderpb.Order {
 	return &orderpb.Order{
-		Id:         o.ID,
-		CustomerId: o.CustomerID,
-		Status:     o.Status,
+		Id:          o.ID,
+		CustomerId:  o.CustomerID,
+		Status:      o.Status,
 		PaymentLink: o.PaymentLink,
-		Items:      o.Items,
+		Items:       o.Items,
 	}
+}
+
+func (o *Order) IsPaid() error {
+	if o.Status != "paid" {
+		return errors.New("order is not paid, order id: " + o.ID)
+	}
+	return nil
 }

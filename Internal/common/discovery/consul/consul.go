@@ -3,10 +3,10 @@ package consul
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
-	"fmt"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/sirupsen/logrus"
@@ -40,7 +40,7 @@ func NewConsulRegistry(consulAddr string) (*ConsulRegistry, error) {
 }
 
 // implement Registry interface
-func (r *ConsulRegistry) Register(ctx context.Context, instanceID, serviceName, hostPort string) error {
+func (r *ConsulRegistry) Register(_ context.Context, instanceID, serviceName, hostPort string) error {
 	parseHostPort := strings.Split(hostPort, ":")
 	if len(parseHostPort) != 2 {
 		return errors.New("invalid host port")
@@ -70,7 +70,15 @@ func (r *ConsulRegistry) DeRegister(ctx context.Context, instanceID, serviceName
 		"instanceID":  instanceID,
 		"serviceName": serviceName,
 	}).Info("deregistering service")
-	return r.client.Agent().CheckDeregister(instanceID)
+
+	// ✅ 先注销 Service（会自动移除关联的 Check）
+	if err := r.client.Agent().ServiceDeregister(instanceID); err != nil {
+		logrus.Errorf("failed to deregister service: %v", err)
+		return err
+	}
+
+
+	return nil
 }
 
 func (r *ConsulRegistry) Discover(ctx context.Context, serviceName string) ([]string, error) {

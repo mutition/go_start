@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func  RegisterToConsul(ctx context.Context, serviceName string) (func() error, error) {
+func RegisterToConsul(ctx context.Context, serviceName string) (func() error, error) {
 	registry, err := consul.NewConsulRegistry(viper.GetString("consul.addr"))
 	if err != nil {
 		return nil, err
@@ -30,15 +30,14 @@ func  RegisterToConsul(ctx context.Context, serviceName string) (func() error, e
 		}
 	}()
 	logrus.WithFields(logrus.Fields{
-		"instanceID": instanceID,
+		"instanceID":  instanceID,
 		"serviceName": serviceName,
-		"hostPort": hostPort,
+		"hostPort":    hostPort,
 	}).Info("registered to consul")
 	return func() error {
 		return registry.DeRegister(ctx, instanceID, serviceName)
 	}, nil
 }
-
 
 func GetServiceGRPCAddr(ctx context.Context, serviceName string) (string, error) {
 	registry, err := consul.NewConsulRegistry(viper.GetString("consul.addr"))

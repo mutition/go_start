@@ -9,12 +9,11 @@ import (
 )
 
 type UpdateOrder struct {
-	Order *domain.Order
+	Order    *domain.Order
 	UpdateFn func(ctx context.Context, order *domain.Order) (*domain.Order, error)
 }
 
-
-type UpdateOrderHandler decorator.CommandHandler[UpdateOrder,interface{}]
+type UpdateOrderHandler decorator.CommandHandler[UpdateOrder, interface{}]
 
 type updateOrderHandler struct {
 	orderRepo domain.Repository
