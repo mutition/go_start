@@ -3,21 +3,17 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	otelgin "go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func RunHTTPServer(serviceName string, wrapper func(router *gin.Engine)) {
 	addr := viper.Sub(serviceName).Get("http-addr")
-	RunHTTPServerOnaddr(addr, wrapper)
-	router := gin.Default()
-	wrapper(router)
-	err := router.Run(addr.(string))
-	if err != nil {
-		panic(err)
-	}
+	RunHTTPServerOnaddr(addr, wrapper, serviceName)
 }
 
-func RunHTTPServerOnaddr(addr any, wrapper func(router *gin.Engine)) {
+func RunHTTPServerOnaddr(addr any, wrapper func(router *gin.Engine), serviceName string) {
 	apiRouter := gin.New()
+	setMiddleware(apiRouter, serviceName)
 	wrapper(apiRouter)
 	apiRouter.Group("/api")
 	apiRouter.GET("/health", func(c *gin.Context) {
@@ -26,4 +22,9 @@ func RunHTTPServerOnaddr(addr any, wrapper func(router *gin.Engine)) {
 	if err := apiRouter.Run(addr.(string)); err != nil {
 		panic(err)
 	}
+}
+
+func setMiddleware(router *gin.Engine, serviceName string) {
+	router.Use(gin.Recovery())
+	router.Use(otelgin.Middleware(serviceName))
 }

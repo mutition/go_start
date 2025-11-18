@@ -16,7 +16,7 @@ import (
 	"github.com/mutition/go_start/order/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-
+	"github.com/mutition/go_start/common/tracing"
 	// "github.com/mutition/go_start/order/ports"
 	"github.com/spf13/viper"
 )
@@ -39,6 +39,15 @@ func main() {
 	serviceName := viper.GetString("order.service-name")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	shutdownJaeger, err := tracing.InitJaegerProvider(viper.GetString("jaeger.url"), serviceName)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer func() {
+		if err := shutdownJaeger(ctx); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 	ch, closeCh := broker.ConnectToRabbitMQ(
 		viper.GetString("rabbitmq.user"), viper.GetString("rabbitmq.password"),
 		viper.GetString("rabbitmq.host"), viper.GetString("rabbitmq.port"))

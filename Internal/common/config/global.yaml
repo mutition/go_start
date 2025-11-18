@@ -29,3 +29,6 @@ rabbitmq:
 stripe-key: "$STRIPE_KEY"
 stripe-webhook-secret: "$STRIPE_WEBHOOK_SECRET"
 local: true
+
+jaeger:
+  url: 110.42.248.168:4318

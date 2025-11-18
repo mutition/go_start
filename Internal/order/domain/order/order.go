@@ -3,7 +3,7 @@ package order
 import (
 	"errors"
 
-	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/order/entity"
 )
 
 type Order struct {
@@ -11,10 +11,10 @@ type Order struct {
 	CustomerID  string
 	Status      string
 	PaymentLink string
-	Items       []*orderpb.Item
+	Items       []*entity.Item
 }
 
-func NewOrder(id, customerID, status, paymentLink string, items []*orderpb.Item) (*Order, error) {
+func NewOrder(id, customerID, status, paymentLink string, items []*entity.Item) (*Order, error) {
 	if id == "" {
 		return nil, errors.New("id is required")
 	}
@@ -36,15 +36,6 @@ func NewOrder(id, customerID, status, paymentLink string, items []*orderpb.Item)
 	}, nil
 }
 
-func (o *Order) ToProto() *orderpb.Order {
-	return &orderpb.Order{
-		Id:          o.ID,
-		CustomerId:  o.CustomerID,
-		Status:      o.Status,
-		PaymentLink: o.PaymentLink,
-		Items:       o.Items,
-	}
-}
 
 func (o *Order) IsPaid() error {
 	if o.Status != "paid" {

@@ -7,9 +7,11 @@ import (
 
 	"github.com/mutition/go_start/common/broker"
 	"github.com/mutition/go_start/common/decorator"
-	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/common/tracing"
 	"github.com/mutition/go_start/order/app/query"
+	"github.com/mutition/go_start/order/convertor"
 	domain "github.com/mutition/go_start/order/domain/order"
+	"github.com/mutition/go_start/order/entity"
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/sirupsen/logrus"
@@ -17,7 +19,7 @@ import (
 
 type CreateOrder struct {
 	CustomerId string
-	Items      []*orderpb.ItemWithQuantity
+	Items      []*entity.ItemWithQuantity
 }
 
 type CreateOrderResult struct {
@@ -29,11 +31,11 @@ type CreateOrderHandler decorator.CommandHandler[CreateOrder, *CreateOrderResult
 type createOrderHandler struct {
 	orderRepo domain.Repository
 	stockGRPC query.StockService
-	ch        *amqp.Channel
+	ch *amqp.Channel
 }
 
-func NewCreateOrderHandler(orderRepo domain.Repository, ch *amqp.Channel,
-	stockGRPC query.StockService, logger *logrus.Entry,
+func NewCreateOrderHandler(orderRepo domain.Repository,ch *amqp.Channel, 
+	stockGRPC query.StockService,logger *logrus.Entry, 
 	client decorator.MetricsClient) CreateOrderHandler {
 	if orderRepo == nil {
 		panic("orderRepo is nil")
@@ -49,6 +51,8 @@ func NewCreateOrderHandler(orderRepo domain.Repository, ch *amqp.Channel,
 }
 
 func (h *createOrderHandler) Handle(ctx context.Context, cmd CreateOrder) (*CreateOrderResult, error) {
+	ctx, span := tracing.StartSpan(ctx, "CreateOrder.PublishToRabbitMQ")
+	defer span.End()
 	responseItems, err := h.validateItems(ctx, cmd.Items)
 	if err != nil {
 		return nil, err
@@ -65,46 +69,47 @@ func (h *createOrderHandler) Handle(ctx context.Context, cmd CreateOrder) (*Crea
 		return nil, err
 	}
 
-	body, err := json.Marshal(o)
+	body, err := json.Marshal(convertor.NewOrderConvertor().EntityToProto(o))
 	if err != nil {
 		return nil, err
 	}
-	err = h.ch.PublishWithContext(ctx, broker.EventOrderCreated, broker.EventOrderCreated, false, false, amqp.Publishing{
-		ContentType:  "application/json",
+	header := broker.InjectRabbitMQHeaders(ctx)
+	err = h.ch.PublishWithContext(ctx, broker.EventOrderCreated,broker.EventOrderCreated, false, false, amqp.Publishing{
+		ContentType: "application/json",
 		DeliveryMode: amqp.Persistent,
-		Body:         body,
+		Body:        body,
+		Headers:     header,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return &CreateOrderResult{
 		OrderId: o.ID,
 	}, nil
 }
 
-func (h *createOrderHandler) validateItems(ctx context.Context,
-	items []*orderpb.ItemWithQuantity) ([]*orderpb.Item, error) {
+func (h *createOrderHandler) validateItems(ctx context.Context, 
+	items []*entity.ItemWithQuantity) ([]*entity.Item, error) {
 	if len(items) == 0 {
 		return nil, errors.New("items are required")
 	}
 	items = packItems(items)
-	response, err := h.stockGRPC.CheckIfItemsInStock(ctx, items)
+	response, err := h.stockGRPC.CheckIfItemsInStock(ctx, convertor.NewItemWithQuantityConvertor().EntitiesToProtos(items))
 	if err != nil {
 		return nil, err
 	}
-	return response.Items, nil
+	return convertor.NewItemConvertor().ProtosToEntities(response.Items), nil
 }
 
-func packItems(items []*orderpb.ItemWithQuantity) []*orderpb.ItemWithQuantity {
+func packItems(items []*entity.ItemWithQuantity) []*entity.ItemWithQuantity {
 	merged := make(map[string]int32)
 	for _, item := range items {
-		merged[item.Id] += item.Quantity
+		merged[item.ID] += item.Quantity
 	}
-	var result []*orderpb.ItemWithQuantity
+	var result []*entity.ItemWithQuantity
 	for id, quantity := range merged {
-		result = append(result, &orderpb.ItemWithQuantity{
-			Id:       id,
+		result = append(result, &entity.ItemWithQuantity{
+			ID:       id,
 			Quantity: quantity,
 		})
 	}

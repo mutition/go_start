@@ -12,6 +12,7 @@ import (
 	"github.com/mutition/go_start/payment/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/mutition/go_start/common/tracing"
 )
 
 func init() {
@@ -29,6 +30,16 @@ func main() {
 	logrus.Info(viper.GetString("stripe-key"))
 	serverType := viper.GetString("payment.server-to-run")
 	serviceName := viper.GetString("payment.service-name")
+
+	shutdownJaeger, err := tracing.InitJaegerProvider(viper.GetString("jaeger.url"), serviceName)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer func() {
+		if err := shutdownJaeger(ctx); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 
 	application, cleanup := service.NewApplication(ctx)
 	defer cleanup()

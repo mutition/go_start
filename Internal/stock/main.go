@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"github.com/mutition/go_start/common/tracing"
 )
 
 func init() {
@@ -29,6 +30,15 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	shutdownJaeger, err := tracing.InitJaegerProvider(viper.GetString("jaeger.url"), serviceName)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer func() {
+		if err := shutdownJaeger(ctx); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 	application := service.NewApplication(ctx)
 
 	deregisterfunc, err := discovery.RegisterToConsul(ctx, serviceName)

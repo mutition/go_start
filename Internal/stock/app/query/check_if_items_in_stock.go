@@ -5,6 +5,7 @@ import (
 
 	"github.com/mutition/go_start/common/decorator"
 	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/common/tracing"
 	domain "github.com/mutition/go_start/stock/domain/stock"
 	"github.com/sirupsen/logrus"
 )
@@ -37,6 +38,8 @@ var stub = map[string]string{
 }
 
 func (h *checkIfItemsInStockHandler) Handle(ctx context.Context, query CheckIfItemsInStock) ([]*orderpb.Item, error) {
+	ctx, span := tracing.StartSpan(ctx, "CheckIfItemsInStock.Handle")
+	defer span.End()
 	var res []*orderpb.Item
 	for _, item := range query.Items {
 		priceId, ok := stub[item.Id]

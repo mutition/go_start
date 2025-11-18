@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mutition/go_start/common/broker"
 	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/common/tracing"
 	domain "github.com/mutition/go_start/payment/domain"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
@@ -83,10 +84,13 @@ func (h PaymentHandler) handleWebhook(c *gin.Context) {
 				c.JSON(http.StatusServiceUnavailable, err)
 				return
 			}
-
+			ctx, span := tracing.StartSpan(ctx, "PaymentHandler.handleWebhook")
+			defer span.End()
+			header := broker.InjectRabbitMQHeaders(ctx)
 			_ = h.ch.PublishWithContext(ctx, broker.EventOrderPaid, broker.EventOrderPaid, false, false, amqp.Publishing{
 				ContentType: "application/json",
 				Body:        marshalledOrder,
+				Headers:     header,
 			})
 			logrus.Infof("Order %s paid to %s, body: %s", session.Metadata["order_id"], session.Metadata["customer_id"], marshalledOrder)
 		}

@@ -9,16 +9,16 @@ servers:
         default: "127.0.0.1"
 
 paths:
-  /customer/{customerId}/orders/{orderId}:
+  /customer/{customer_id}/orders/{order_id}:
     get:
       description: Get an order by customer id and order id
       parameters:
-        - name: customerId
+        - name: customer_id
           in: path
           required: true
           schema:
             type: string
-        - name: orderId
+        - name: order_id
           in: path
           required: true
           schema:
@@ -41,11 +41,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /customer/{customerId}/orders:
+  /customer/{customer_id}/orders:
     post:
       description: Create a new order
       parameters:
-        - name: customerId
+        - name: customer_id
           in: path
           required: true
           schema:
@@ -74,10 +74,16 @@ components:
   schemas:
     Order:
       type: object
+      required:
+        - id
+        - customer_id
+        - status
+        - items
+        - paymentLink
       properties:
         id:
           type: string
-        customerId:
+        customer_id:
           type: string
         status:
           type: string
@@ -85,10 +91,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Item'
-        paymentlink:
+        paymentLink:
           type: string
           
     Item:
+      required:
+        - id
+        - name
+        - quantity
+        - priceId
       type: object
       properties:
         id:
@@ -118,10 +129,10 @@ components:
     CreateOrderRequest:
       type: object
       required:
-        - customerId
+        - customer_id
         - items
       properties:
-        customerId:
+        customer_id:
           type: string
         items:
           type: array
@@ -129,6 +140,9 @@ components:
             $ref: '#/components/schemas/ItemWithQuantity'
     ItemWithQuantity:
       type: object
+      required:
+        - id
+        - quantity
       properties:
         id:
           type: string

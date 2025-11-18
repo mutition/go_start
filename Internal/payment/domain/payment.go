@@ -18,7 +18,8 @@ type Order struct {
 	Items       []*orderpb.Item
 }
 
-func (o *Order) ToProto() *orderpb.Order {
+
+func ToProto(o *Order) *orderpb.Order {
 	return &orderpb.Order{
 		Id:          o.ID,
 		CustomerId:  o.CustomerID,

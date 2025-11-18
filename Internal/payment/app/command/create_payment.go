@@ -5,6 +5,7 @@ import (
 
 	"github.com/mutition/go_start/common/decorator"
 	"github.com/mutition/go_start/common/genproto/orderpb"
+	"github.com/mutition/go_start/common/tracing"
 	"github.com/mutition/go_start/payment/domain"
 	"github.com/sirupsen/logrus"
 )
@@ -31,6 +32,8 @@ func NewCreatePaymentHandler(processor domain.Processor, orderGRPC OrderService,
 }
 
 func (h *createPaymentHandler) Handle(ctx context.Context, cmd CreatePayment) (string, error) {
+	ctx, span := tracing.StartSpan(ctx, "CreatePayment.CreatePayment")
+	defer span.End()
 	link, err := h.processor.CreatePaymentLink(ctx, cmd.Order)
 	if err != nil {
 		return "", err
