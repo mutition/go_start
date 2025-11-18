@@ -65,9 +65,6 @@ func (h *createOrderHandler) Handle(ctx context.Context, cmd CreateOrder) (*Crea
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
 
 	body, err := json.Marshal(convertor.NewOrderConvertor().EntityToProto(o))
 	if err != nil {

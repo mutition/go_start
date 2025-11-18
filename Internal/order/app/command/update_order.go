@@ -32,7 +32,7 @@ func NewUpdateOrderHandler(orderRepo domain.Repository, logger *logrus.Entry, cl
 
 func (h *updateOrderHandler) Handle(ctx context.Context, cmd UpdateOrder) (interface{}, error) {
 	if cmd.UpdateFn == nil {
-		logrus.Warnf("UpdateFn is nil, using default update function for order %s", cmd.Order)
+		logrus.Warnf("UpdateFn is nil, using default update function for order %s", cmd.Order.ID)
 		cmd.UpdateFn = func(ctx context.Context, order *domain.Order) (*domain.Order, error) {
 			return order, nil
 		}
